@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "561887929464",
+    "project_id": "tunipromos-4abf6",
+    "storage_bucket": "tunipromos-4abf6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:561887929464:android:388be6bde0975823d3398d",
+        "android_client_info": {
+          "package_name": "com.example.tunipromos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-qdZBKZzTTvWheZ8yUfdx3FiENMXzeRk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
