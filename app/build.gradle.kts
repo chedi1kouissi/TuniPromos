@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
+    implementation(libs.play.services.location)
     implementation(libs.glide)
     implementation(libs.appcompat)
     implementation(libs.material)

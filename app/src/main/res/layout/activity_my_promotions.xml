@@ -13,24 +13,24 @@
         android:background="@color/surface_light"
         android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Notifications"
+        app:title="My Promotions"
         app:titleTextColor="@color/text_primary" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/notificationsRecyclerView"
+        android:id="@+id/promotionsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="16dp"
         android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:listitem="@layout/item_notification" />
+        tools:listitem="@layout/item_promotion" />
 
     <TextView
         android:id="@+id/emptyStateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No notifications yet"
+        android:text="You haven't created any promotions yet"
         android:textColor="@color/text_secondary"
         android:textSize="16sp"
         android:visibility="gone"

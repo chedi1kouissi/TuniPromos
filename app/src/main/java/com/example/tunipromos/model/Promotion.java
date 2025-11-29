@@ -1,5 +1,7 @@
 package com.example.tunipromos.model;
 
+import java.util.List;
+
 public class Promotion {
     private String promoId;
     private String title;
@@ -11,12 +13,17 @@ public class Promotion {
     private String startDate;
     private String endDate;
     private String imageUrl;
+    private double latitude;
+    private double longitude;
+    private List<String> likes;
 
     public Promotion() {
-        // Constructeur vide requis pour Firestore
+        // Empty constructor needed for Firestore
     }
 
-    public Promotion(String promoId, String title, String description, double priceBefore, double priceAfter, String category, String providerId, String startDate, String endDate, String imageUrl) {
+    public Promotion(String promoId, String title, String description, double priceBefore, double priceAfter,
+            String category, String providerId, String startDate, String endDate, String imageUrl, double latitude,
+            double longitude) {
         this.promoId = promoId;
         this.title = title;
         this.description = description;
@@ -27,35 +34,111 @@ public class Promotion {
         this.startDate = startDate;
         this.endDate = endDate;
         this.imageUrl = imageUrl;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    public String getPromoId() { return promoId; }
-    public void setPromoId(String promoId) { this.promoId = promoId; }
+    public String getPromoId() {
+        return promoId;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setPromoId(String promoId) {
+        this.promoId = promoId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getTitle() {
+        return title;
+    }
 
-    public double getPriceBefore() { return priceBefore; }
-    public void setPriceBefore(double priceBefore) { this.priceBefore = priceBefore; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public double getPriceAfter() { return priceAfter; }
-    public void setPriceAfter(double priceAfter) { this.priceAfter = priceAfter; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getProviderId() { return providerId; }
-    public void setProviderId(String providerId) { this.providerId = providerId; }
+    public double getPriceBefore() {
+        return priceBefore;
+    }
 
-    public String getStartDate() { return startDate; }
-    public void setStartDate(String startDate) { this.startDate = startDate; }
+    public void setPriceBefore(double priceBefore) {
+        this.priceBefore = priceBefore;
+    }
 
-    public String getEndDate() { return endDate; }
-    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public double getPriceAfter() {
+        return priceAfter;
+    }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setPriceAfter(double priceAfter) {
+        this.priceAfter = priceAfter;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public List<String> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(List<String> likes) {
+        this.likes = likes;
+    }
 }

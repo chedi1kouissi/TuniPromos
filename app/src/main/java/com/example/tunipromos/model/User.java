@@ -1,10 +1,13 @@
 package com.example.tunipromos.model;
 
+import java.util.List;
+
 public class User {
     private String userId;
     private String name;
     private String email;
     private String role; // "user" or "provider"
+    private List<String> notificationCategories;
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -47,5 +50,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<String> getNotificationCategories() {
+        return notificationCategories;
+    }
+
+    public void setNotificationCategories(List<String> notificationCategories) {
+        this.notificationCategories = notificationCategories;
     }
 }

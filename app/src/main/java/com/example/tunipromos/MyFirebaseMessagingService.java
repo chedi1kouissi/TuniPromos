@@ -28,13 +28,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+
+            // Handle data payload
+            String title = remoteMessage.getData().get("title");
+            String body = remoteMessage.getData().get("body");
+
+            if (title != null && body != null) {
+                sendNotification(title, body);
+                saveNotificationToFirestore(title, body);
+            }
         }
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            String title = remoteMessage.getNotification().getTitle();
+            String body = remoteMessage.getNotification().getBody();
+            // Avoid duplicate notifications if data payload also triggered it
+            if (remoteMessage.getData().size() == 0) {
+                sendNotification(title, body);
+                saveNotificationToFirestore(title, body);
+            }
         }
+    }
+
+    private void saveNotificationToFirestore(String title, String message) {
+        NotificationHelper.saveNotification(this, title, message);
     }
 
     @Override
@@ -53,17 +72,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         String channelId = "fcm_default_channel";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.mipmap.ic_launcher_round) // Remplacer par votre icône de notif si vous en avez une spécifique (transparente)
-                        .setContentTitle(title)
-                        .setContentText(messageBody)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher_round) // Remplacer par votre icône de notif si vous en avez une
+                                                          // spécifique (transparente)
+                .setContentTitle(title)
+                .setContentText(messageBody)
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

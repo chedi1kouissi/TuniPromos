@@ -1,7 +1,12 @@
 package com.example.tunipromos;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -15,25 +20,28 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.tunipromos.model.User;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
+
+    // UI Components
     private TextInputEditText nameEditText, emailEditText, passwordEditText;
     private RadioGroup roleRadioGroup;
-    private RadioButton userRadioButton, providerRadioButton;
     private Button registerButton;
     private TextView loginTextView;
+
+    // Firebase
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -42,117 +50,145 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Check Google Play Services
+        checkPlayServices();
+
+        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        initViews();
+        setupListeners();
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, 9000).show();
+            } else {
+                Log.e(TAG, "This device is not supported.");
+                Toast.makeText(this, "This device is not supported for Firebase.", Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private void initViews() {
         nameEditText = findViewById(R.id.nameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         roleRadioGroup = findViewById(R.id.roleRadioGroup);
-        userRadioButton = findViewById(R.id.userRadioButton);
-        providerRadioButton = findViewById(R.id.providerRadioButton);
         registerButton = findViewById(R.id.registerButton);
         loginTextView = findViewById(R.id.loginTextView);
-
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerUser();
-            }
-        });
-
-        loginTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Retour à LoginActivity
-            }
-        });
     }
 
-    private void registerUser() {
-        final String name = nameEditText.getText().toString();
-        final String email = emailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
+    private void setupListeners() {
+        registerButton.setOnClickListener(v -> attemptRegistration());
+        loginTextView.setOnClickListener(v -> finish());
+    }
+
+    private void attemptRegistration() {
+        nameEditText.setError(null);
+        emailEditText.setError(null);
+        passwordEditText.setError(null);
+
+        String name = nameEditText.getText().toString().trim();
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
         
-        int selectedRoleId = roleRadioGroup.getCheckedRadioButtonId();
-        final String role;
-        if (selectedRoleId == R.id.providerRadioButton) {
+        String role = "user";
+        if (roleRadioGroup.getCheckedRadioButtonId() == R.id.providerRadioButton) {
             role = "provider";
-        } else {
-            role = "user";
         }
 
-        if (TextUtils.isEmpty(name)) {
-            nameEditText.setError("Nom requis");
-            return;
-        }
-        if (TextUtils.isEmpty(email)) {
-            emailEditText.setError("Email requis");
-            return;
-        }
-        if (TextUtils.isEmpty(password)) {
-            passwordEditText.setError("Mot de passe requis");
-            return;
-        }
-        if (password.length() < 6) {
-            passwordEditText.setError("Le mot de passe doit contenir au moins 6 caractères");
+        // Quick validation
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        registerButton.setEnabled(false);
-        Toast.makeText(this, "Inscription en cours...", Toast.LENGTH_SHORT).show();
+        performFirebaseRegistration(name, email, password, role);
+    }
+
+    private void performFirebaseRegistration(String name, String email, String password, String role) {
+        showLoading(true);
+        Log.d(TAG, "Starting registration...");
+
+        // Add a safety timeout
+        Handler handler = new Handler(Looper.getMainLooper());
+        Runnable timeoutRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (registerButton.getText().equals("Chargement...")) {
+                    showLoading(false);
+                    Toast.makeText(RegisterActivity.this, "Timeout: Le serveur ne répond pas. Vérifiez votre connexion ou Google Play Services.", Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Registration Timed Out");
+                }
+            }
+        };
+        handler.postDelayed(timeoutRunnable, 15000); // 15 seconds timeout
 
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        handler.removeCallbacks(timeoutRunnable); // Cancel timeout
+                        
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "createUserWithEmail:success");
+                            Log.d(TAG, "Auth Success");
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                            String userId = firebaseUser.getUid();
-
-                            User user = new User(userId, name, email, role);
-
-                            db.collection("users").document(userId).set(user)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            registerButton.setEnabled(true);
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(RegisterActivity.this, "Inscription réussie", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
-                                                finish();
-                                            } else {
-                                                Toast.makeText(RegisterActivity.this, "Erreur Firestore: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    });
-
+                            saveUserToFirestore(firebaseUser, name, email, role);
                         } else {
-                            registerButton.setEnabled(true);
-                            String errorMessage = "Erreur inconnue";
-                            try {
-                                throw task.getException();
-                            } catch(FirebaseAuthWeakPasswordException e) {
-                                errorMessage = "Mot de passe trop faible";
-                                passwordEditText.setError(errorMessage);
-                                passwordEditText.requestFocus();
-                            } catch(FirebaseAuthInvalidCredentialsException e) {
-                                errorMessage = "Email invalide";
-                                emailEditText.setError(errorMessage);
-                                emailEditText.requestFocus();
-                            } catch(FirebaseAuthUserCollisionException e) {
-                                errorMessage = "Cet email existe déjà";
-                                emailEditText.setError(errorMessage);
-                                emailEditText.requestFocus();
-                            } catch(Exception e) {
-                                errorMessage = e.getMessage();
-                                Log.e(TAG, "Registration failed", e);
-                            }
-                            
-                            Toast.makeText(RegisterActivity.this, "Erreur: " + errorMessage, Toast.LENGTH_LONG).show();
+                            showLoading(false);
+                            Log.e(TAG, "Auth Failed", task.getException());
+                            String msg = task.getException() != null ? task.getException().getMessage() : "Unknown Error";
+                            Toast.makeText(RegisterActivity.this, "Erreur Auth: " + msg, Toast.LENGTH_LONG).show();
                         }
                     }
                 });
+    }
+
+    private void saveUserToFirestore(FirebaseUser firebaseUser, String name, String email, String role) {
+        if (firebaseUser == null) return;
+
+        User user = new User(firebaseUser.getUid(), name, email, role);
+
+        db.collection("users").document(firebaseUser.getUid())
+                .set(user)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        showLoading(false);
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Firestore Success");
+                            Toast.makeText(RegisterActivity.this, "Compte créé !", Toast.LENGTH_SHORT).show();
+                            navigateToMain();
+                        } else {
+                            Log.e(TAG, "Firestore Failed", task.getException());
+                            // Proceed anyway since Auth worked
+                            navigateToMain(); 
+                        }
+                    }
+                });
+    }
+
+    private void navigateToMain() {
+        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void showLoading(boolean isLoading) {
+        registerButton.setEnabled(!isLoading);
+        if (isLoading) {
+            registerButton.setText("Chargement...");
+        } else {
+            registerButton.setText("S'inscrire");
+        }
     }
 }

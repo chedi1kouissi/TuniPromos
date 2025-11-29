@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Modern Palette -->
+    <color name="primary">#6C63FF</color> <!-- Electric Violet -->
+    <color name="primary_variant">#5A52D5</color>
+    <color name="secondary">#FF6584</color> <!-- Salmon Pink -->
+    <color name="secondary_variant">#FF4060</color>
+    <color name="background_light">#F8F9FA</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="text_primary">#2D3436</color>
+    <color name="text_secondary">#636E72</color>
+    <color name="error">#D63031</color>
+    <color name="success">#00B894</color>
+    <color name="gradient_start">#6C63FF</color>
+    <color name="gradient_end">#5A52D5</color>
+
+    <!-- Legacy/Base Colors (kept for compatibility if needed) -->
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_500">#FF5722</color>
-    <color name="purple_200">#FFAB91</color>
-    <color name="purple_700">#E64A19</color>
-    <color name="teal_200">#FFCC80</color>
-    <color name="teal_700">#F57C00</color>
-    <color name="orange_primary">#FF5722</color>
-    <color name="orange_dark">#E64A19</color>
 </resources>

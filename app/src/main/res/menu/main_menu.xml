@@ -6,7 +6,7 @@
         android:id="@+id/action_notifications"
         android:icon="@android:drawable/ic_popup_reminder"
         android:title="Notifications"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
         
     <item
         android:id="@+id/action_logout"
